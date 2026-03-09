@@ -59,8 +59,7 @@
             <p class="eyebrow">3. Übung</p>
             <h2 id="sessionTitle">Bereit</h2>
             <p id="sessionDescription" class="muted">
-              Wähle einen Modus und ein Thema. Danach generiert die App immer neue
-              zufällige Aufgaben.
+              Wähle einen Modus und ein Thema. Danach generiert die App immer neue zufällige Aufgaben.
             </p>
           </div>
           <span id="difficultyBadge" class="badge">Shuffle aktiv</span>
@@ -72,16 +71,24 @@
             Erstelle eine Aufgabe, um zu starten.
           </p>
 
-          <div class="hero-actions stacked">
-            <button id="newExerciseBtn" class="primary">Neue Aufgabe</button>
-            <button id="playPromptBtn">Aufgabe abspielen</button>
-            <button id="revealBtn">Lösung zeigen</button>
-          </div>
+          <div class="flow-layout">
+            <div class="hero-actions stacked">
+              <button id="newExerciseBtn" class="primary">Neue Aufgabe</button>
+              <button id="playPromptBtn">Aufgabe abspielen</button>
+              <button id="revealBtn">Lösung zeigen</button>
+            </div>
 
-          <div id="singControls" class="sing-controls hidden">
-            <button id="playReferenceBtn">Grundton spielen</button>
-            <button id="playSolutionBtn">Lösung abspielen</button>
-            <button id="doneSingingBtn" class="primary">Fertig</button>
+            <div id="singPanel" class="flow-panel hidden">
+              <p class="eyebrow">Sing-Flow</p>
+              <div id="singFlowText" class="flow-text">
+                Starte eine Aufgabe, um den Ablauf zu sehen.
+              </div>
+              <div id="singControls" class="sing-controls hidden">
+                <button id="playReferenceBtn">1. Grundton spielen</button>
+                <button id="doneSingingBtn" class="primary">2. Ich habe gesungen</button>
+                <button id="playSolutionBtn">3. Lösung abspielen</button>
+              </div>
+            </div>
           </div>
 
           <div id="answersSection" class="answers-section hidden">
@@ -94,7 +101,6 @@
           </div>
         </div>
       </section>
-
     </main>
   </div>
 

@@ -99,6 +99,7 @@ const state = {
   category: "intervale",
   currentExercise: null,
   revealed: false,
+  singStep: "idle",
   statsOpen: false,
   introOpen: true,
   queues: {},
@@ -131,6 +132,8 @@ function cacheElements() {
     taskTitle: document.getElementById("taskTitle"),
     taskInstructions: document.getElementById("taskInstructions"),
     difficultyBadge: document.getElementById("difficultyBadge"),
+    singPanel: document.getElementById("singPanel"),
+    singFlowText: document.getElementById("singFlowText"),
     singControls: document.getElementById("singControls"),
     playReferenceBtn: document.getElementById("playReferenceBtn"),
     playSolutionBtn: document.getElementById("playSolutionBtn"),
@@ -158,7 +161,7 @@ function bindEvents() {
   el.revealBtn.addEventListener("click", revealSolution);
   el.playReferenceBtn.addEventListener("click", () => playReference(state.currentExercise));
   el.playSolutionBtn.addEventListener("click", () => playSolution(state.currentExercise));
-  el.doneSingingBtn.addEventListener("click", revealSolution);
+  el.doneSingingBtn.addEventListener("click", markSingingDone);
   el.resetStatsBtn.addEventListener("click", resetStats);
   el.closeStatsBtn.addEventListener("click", toggleStats);
   el.toggleStatsBtn.addEventListener("click", toggleStats);
@@ -222,6 +225,7 @@ function newExercise() {
   const kind = nextKindForCategory(state.category);
   state.currentExercise = category.generator(category, kind, state.mode);
   state.revealed = false;
+  state.singStep = state.mode === "sing" ? "prompt" : "idle";
   renderExercise();
   if (state.mode === "hear") playPrompt();
 }
@@ -231,13 +235,16 @@ function renderExercise() {
   el.answerOptions.innerHTML = "";
   el.feedbackBox.className = "feedback muted";
   el.feedbackBox.textContent = "Noch keine Bewertung.";
-  el.singControls.classList.toggle("hidden", state.mode !== "sing" || !exercise);
+  const hasSingExercise = state.mode === "sing" && !!exercise;
+  el.singPanel.classList.toggle("hidden", !hasSingExercise);
+  el.singControls.classList.toggle("hidden", !hasSingExercise);
   el.answersSection.classList.toggle("hidden", state.mode !== "hear" || !exercise);
 
   if (!exercise) {
     el.taskTitle.textContent = "Noch keine Aufgabe";
     el.taskInstructions.textContent = "Erstelle eine Aufgabe, um zu starten.";
     el.categoryStatsTitle.textContent = `Themen-Statistik: ${CATEGORIES[state.category].label}`;
+    el.singFlowText.textContent = "Starte eine Aufgabe, um den Ablauf zu sehen.";
     return;
   }
 
@@ -255,6 +262,7 @@ function renderExercise() {
       return button;
     });
   options.forEach((button) => el.answerOptions.appendChild(button));
+  renderSingFlow();
   renderCategoryStats();
 }
 
