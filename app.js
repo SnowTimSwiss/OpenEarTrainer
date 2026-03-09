@@ -99,6 +99,9 @@ const state = {
   category: "intervale",
   currentExercise: null,
   revealed: false,
+  statsOpen: false,
+  introOpen: true,
+  queues: {},
   stats: loadStats(),
 };
 
@@ -113,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSession();
   renderStats();
   renderCategoryStats();
+  renderStatsVisibility();
 });
 
 function cacheElements() {
@@ -133,10 +137,18 @@ function cacheElements() {
     doneSingingBtn: document.getElementById("doneSingingBtn"),
     feedbackBox: document.getElementById("feedbackBox"),
     answerOptions: document.getElementById("answerOptions"),
+    answersSection: document.getElementById("answersSection"),
     globalStats: document.getElementById("globalStats"),
     categoryStatsTitle: document.getElementById("categoryStatsTitle"),
     categoryStats: document.getElementById("categoryStats"),
     resetStatsBtn: document.getElementById("resetStatsBtn"),
+    closeStatsBtn: document.getElementById("closeStatsBtn"),
+    statsPanel: document.getElementById("statsPanel"),
+    toggleStatsBtn: document.getElementById("toggleStatsBtn"),
+    introModal: document.getElementById("introModal"),
+    introModeButtons: document.getElementById("introModeButtons"),
+    introCategoryButtons: document.getElementById("introCategoryButtons"),
+    startTrainingBtn: document.getElementById("startTrainingBtn"),
   });
 }
 
@@ -148,6 +160,14 @@ function bindEvents() {
   el.playSolutionBtn.addEventListener("click", () => playSolution(state.currentExercise));
   el.doneSingingBtn.addEventListener("click", revealSolution);
   el.resetStatsBtn.addEventListener("click", resetStats);
+  el.closeStatsBtn.addEventListener("click", toggleStats);
+  el.toggleStatsBtn.addEventListener("click", toggleStats);
+  el.startTrainingBtn.addEventListener("click", () => {
+    state.introOpen = false;
+    renderIntro();
+    renderSession();
+    renderExercise();
+  });
 }
 
 function renderModeButtons() {
@@ -163,9 +183,11 @@ function renderModeButtons() {
       renderModeButtons();
       renderSession();
       renderExercise();
+      renderStatsVisibility();
     });
     el.modeButtons.appendChild(button);
   }
+  if (el.introModeButtons) renderIntroModeButtons();
 }
 
 function renderCategoryButtons() {
@@ -182,9 +204,11 @@ function renderCategoryButtons() {
       renderSession();
       renderExercise();
       renderCategoryStats();
+      renderStatsVisibility();
     });
     el.categoryButtons.appendChild(button);
   }
+  if (el.introCategoryButtons) renderIntroCategoryButtons();
 }
 
 function renderSession() {
@@ -195,7 +219,7 @@ function renderSession() {
 
 function newExercise() {
   const category = CATEGORIES[state.category];
-  const kind = pickRandom(category.exerciseKinds);
+  const kind = nextKindForCategory(state.category);
   state.currentExercise = category.generator(category, kind, state.mode);
   state.revealed = false;
   renderExercise();
@@ -208,6 +232,7 @@ function renderExercise() {
   el.feedbackBox.className = "feedback muted";
   el.feedbackBox.textContent = "Noch keine Bewertung.";
   el.singControls.classList.toggle("hidden", state.mode !== "sing" || !exercise);
+  el.answersSection.classList.toggle("hidden", state.mode !== "hear" || !exercise);
 
   if (!exercise) {
     el.taskTitle.textContent = "Noch keine Aufgabe";
@@ -288,6 +313,48 @@ function renderStats() {
   }
 }
 
+function renderStatsVisibility() {
+  el.statsPanel.classList.toggle("hidden", !state.statsOpen);
+  el.toggleStatsBtn.textContent = state.statsOpen ? "Statistik ausblenden" : "Statistik anzeigen";
+}
+
+function renderIntro() {
+  el.introModal.classList.toggle("hidden", !state.introOpen);
+}
+
+function renderIntroModeButtons() {
+  el.introModeButtons.innerHTML = "";
+  for (const mode of MODES) {
+    const button = document.createElement("button");
+    button.textContent = mode.label;
+    if (state.mode === mode.id) button.classList.add("active");
+    button.addEventListener("click", () => {
+      state.mode = mode.id;
+      renderModeButtons();
+      renderSession();
+      renderExercise();
+    });
+    el.introModeButtons.appendChild(button);
+  }
+}
+
+function renderIntroCategoryButtons() {
+  el.introCategoryButtons.innerHTML = "";
+  for (const [id, category] of Object.entries(CATEGORIES)) {
+    const button = document.createElement("button");
+    button.textContent = category.label;
+    if (state.category === id) button.classList.add("active");
+    button.addEventListener("click", () => {
+      state.category = id;
+      renderCategoryButtons();
+      renderSession();
+      renderExercise();
+      renderCategoryStats();
+    });
+    el.introCategoryButtons.appendChild(button);
+  }
+}
+
 function renderCategoryStats() {
   const category = CATEGORIES[state.category];
   const categoryStats = state.stats[state.category] || {};
@@ -311,6 +378,27 @@ function resetStats() {
   renderCategoryStats();
   el.feedbackBox.className = "feedback muted";
   el.feedbackBox.textContent = "Statistik wurde zurückgesetzt.";
+}
+
+function toggleStats() {
+  state.statsOpen = !state.statsOpen;
+  renderStatsVisibility();
+}
+
+function nextKindForCategory(categoryId) {
+  if (!state.queues[categoryId] || state.queues[categoryId].length === 0) {
+    state.queues[categoryId] = shuffledCopy(CATEGORIES[categoryId].exerciseKinds);
+  }
+  return state.queues[categoryId].pop();
+}
+
+function shuffledCopy(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
 }
 
 function generateIntervalExercise(category, kind, mode) {

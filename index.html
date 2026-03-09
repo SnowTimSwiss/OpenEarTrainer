@@ -7,63 +7,76 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div>
-        <p class="eyebrow">Maturatraining</p>
-        <h1>Open Ear Trainer</h1>
-        <p class="intro">
-          Zufällige Gehörbildungs- und Singübungen für Intervalle, Dreiklänge,
-          Vierklänge und Tonmaterial.
-        </p>
+  <div id="introModal" class="modal-shell">
+    <section class="modal-card intro-card">
+      <p class="eyebrow">Open Ear Trainer</p>
+      <h2>Was möchtest du üben?</h2>
+      <p class="muted">
+        Starte mit einem klaren Fokus. Du kannst Modus und Thema später jederzeit wieder wechseln.
+      </p>
+
+      <div class="setup-block">
+        <p class="eyebrow">Modus</p>
+        <div id="introModeButtons" class="button-grid two"></div>
       </div>
 
-      <section class="panel">
-        <h2>Modus</h2>
-        <div id="modeButtons" class="button-grid two"></div>
-      </section>
+      <div class="setup-block">
+        <p class="eyebrow">Thema</p>
+        <div id="introCategoryButtons" class="button-grid"></div>
+      </div>
 
-      <section class="panel">
-        <h2>Thema</h2>
-        <div id="categoryButtons" class="button-grid"></div>
-      </section>
+      <button id="startTrainingBtn" class="primary wide">Training starten</button>
+    </section>
+  </div>
 
-      <section class="panel">
-        <h2>Statistik</h2>
-        <div class="stats-list" id="globalStats"></div>
-      </section>
-    </aside>
-
+  <div class="app-shell">
     <main class="main">
-      <section class="hero panel">
+      <section class="panel hero compact">
         <div>
-          <p class="eyebrow">Aktuelle Übung</p>
-          <h2 id="sessionTitle">Bereit</h2>
-          <p id="sessionDescription" class="muted">
-            Wähle einen Modus und ein Thema. Danach generiert die App immer neue
-            zufällige Aufgaben.
+          <p class="eyebrow">Maturatraining</p>
+          <h1>Open Ear Trainer</h1>
+          <p class="intro">
+            Weniger Ablenkung, mehr Fokus: wählen, hören oder singen, lösen, weiter.
           </p>
         </div>
-        <div class="hero-actions">
-          <button id="newExerciseBtn" class="primary">Neue Aufgabe</button>
-          <button id="playPromptBtn">Aufgabe abspielen</button>
-          <button id="revealBtn">Lösung zeigen</button>
+        <button id="toggleStatsBtn" class="ghost">Statistik anzeigen</button>
+      </section>
+
+      <section class="panel setup-panel">
+        <div class="setup-block">
+          <p class="eyebrow">1. Modus</p>
+          <div id="modeButtons" class="button-grid two"></div>
+        </div>
+        <div class="setup-block">
+          <p class="eyebrow">2. Thema</p>
+          <div id="categoryButtons" class="button-grid"></div>
         </div>
       </section>
 
-      <section class="workspace">
-        <div class="panel task-panel">
-          <div class="task-head">
-            <div>
-              <p class="eyebrow">Aufgabe</p>
-              <h3 id="taskTitle">Noch keine Aufgabe</h3>
-            </div>
-            <span id="difficultyBadge" class="badge">Shuffle aktiv</span>
+      <section class="panel task-panel">
+        <div class="task-head">
+          <div>
+            <p class="eyebrow">3. Übung</p>
+            <h2 id="sessionTitle">Bereit</h2>
+            <p id="sessionDescription" class="muted">
+              Wähle einen Modus und ein Thema. Danach generiert die App immer neue
+              zufällige Aufgaben.
+            </p>
           </div>
+          <span id="difficultyBadge" class="badge">Shuffle aktiv</span>
+        </div>
 
+        <div class="exercise-card">
+          <h3 id="taskTitle">Noch keine Aufgabe</h3>
           <p id="taskInstructions" class="task-text">
             Erstelle eine Aufgabe, um zu starten.
           </p>
+
+          <div class="hero-actions stacked">
+            <button id="newExerciseBtn" class="primary">Neue Aufgabe</button>
+            <button id="playPromptBtn">Aufgabe abspielen</button>
+            <button id="revealBtn">Lösung zeigen</button>
+          </div>
 
           <div id="singControls" class="sing-controls hidden">
             <button id="playReferenceBtn">Grundton spielen</button>
@@ -71,34 +84,41 @@
             <button id="doneSingingBtn" class="primary">Fertig</button>
           </div>
 
+          <div id="answersSection" class="answers-section hidden">
+            <p class="eyebrow">Antwort</p>
+            <div id="answerOptions" class="answer-options"></div>
+          </div>
+
           <div id="feedbackBox" class="feedback muted">
             Noch keine Bewertung.
           </div>
         </div>
-
-        <div class="panel answers-panel">
-          <div class="task-head">
-            <div>
-              <p class="eyebrow">Antwort</p>
-              <h3>Was war es?</h3>
-            </div>
-            <button id="resetStatsBtn" class="ghost">Statistik zurücksetzen</button>
-          </div>
-
-          <div id="answerOptions" class="answer-options"></div>
-        </div>
       </section>
 
-      <section class="panel">
-        <div class="task-head">
-          <div>
-            <p class="eyebrow">Themen-Statistik</p>
-            <h3 id="categoryStatsTitle">Kein Thema gewählt</h3>
-          </div>
-        </div>
-        <div id="categoryStats" class="stats-grid"></div>
-      </section>
     </main>
+  </div>
+
+  <div id="statsPanel" class="modal-shell hidden">
+    <section class="modal-card stats-card-shell">
+      <div class="task-head">
+        <div>
+          <p class="eyebrow">Statistik</p>
+          <h3>Dein Fortschritt</h3>
+        </div>
+        <div class="modal-actions">
+          <button id="resetStatsBtn" class="ghost">Statistik zurücksetzen</button>
+          <button id="closeStatsBtn" class="ghost">Schliessen</button>
+        </div>
+      </div>
+      <div class="stats-list" id="globalStats"></div>
+      <div class="task-head stats-subhead">
+        <div>
+          <p class="eyebrow">Themen-Statistik</p>
+          <h3 id="categoryStatsTitle">Kein Thema gewählt</h3>
+        </div>
+      </div>
+      <div id="categoryStats" class="stats-grid"></div>
+    </section>
   </div>
 
   <script src="app.js"></script>
