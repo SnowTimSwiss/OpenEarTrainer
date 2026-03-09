@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Ear Trainer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div>
+        <p class="eyebrow">Maturatraining</p>
+        <h1>Open Ear Trainer</h1>
+        <p class="intro">
+          Zufällige Gehörbildungs- und Singübungen für Intervalle, Dreiklänge,
+          Vierklänge und Tonmaterial.
+        </p>
+      </div>
+
+      <section class="panel">
+        <h2>Modus</h2>
+        <div id="modeButtons" class="button-grid two"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Thema</h2>
+        <div id="categoryButtons" class="button-grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Statistik</h2>
+        <div class="stats-list" id="globalStats"></div>
+      </section>
+    </aside>
+
+    <main class="main">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">Aktuelle Übung</p>
+          <h2 id="sessionTitle">Bereit</h2>
+          <p id="sessionDescription" class="muted">
+            Wähle einen Modus und ein Thema. Danach generiert die App immer neue
+            zufällige Aufgaben.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="newExerciseBtn" class="primary">Neue Aufgabe</button>
+          <button id="playPromptBtn">Aufgabe abspielen</button>
+          <button id="revealBtn">Lösung zeigen</button>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="panel task-panel">
+          <div class="task-head">
+            <div>
+              <p class="eyebrow">Aufgabe</p>
+              <h3 id="taskTitle">Noch keine Aufgabe</h3>
+            </div>
+            <span id="difficultyBadge" class="badge">Shuffle aktiv</span>
+          </div>
+
+          <p id="taskInstructions" class="task-text">
+            Erstelle eine Aufgabe, um zu starten.
+          </p>
+
+          <div id="singControls" class="sing-controls hidden">
+            <button id="playReferenceBtn">Grundton spielen</button>
+            <button id="playSolutionBtn">Lösung abspielen</button>
+            <button id="doneSingingBtn" class="primary">Fertig</button>
+          </div>
+
+          <div id="feedbackBox" class="feedback muted">
+            Noch keine Bewertung.
+          </div>
+        </div>
+
+        <div class="panel answers-panel">
+          <div class="task-head">
+            <div>
+              <p class="eyebrow">Antwort</p>
+              <h3>Was war es?</h3>
+            </div>
+            <button id="resetStatsBtn" class="ghost">Statistik zurücksetzen</button>
+          </div>
+
+          <div id="answerOptions" class="answer-options"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="task-head">
+          <div>
+            <p class="eyebrow">Themen-Statistik</p>
+            <h3 id="categoryStatsTitle">Kein Thema gewählt</h3>
+          </div>
+        </div>
+        <div id="categoryStats" class="stats-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
