@@ -1,16 +1,14 @@
 const STORAGE_KEY = "open-ear-trainer-stats-v1";
 
 const MODES = [
-  { id: "hear", label: "Hören" },
+  { id: "hear", label: "Hoeren" },
   { id: "sing", label: "Singen" },
 ];
-
-const NOTE_NAMES = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
 
 const CATEGORIES = {
   intervale: {
     label: "Intervalle",
-    description: "Intervalle hören oder vom Grundton aus singen.",
+    description: "Intervalle hoeren oder vom Grundton aus singen.",
     answerLabel: "Intervall",
     exerciseKinds: [
       { id: "m2", label: "kleine Sekunde", semitones: 1 },
@@ -29,8 +27,8 @@ const CATEGORIES = {
     generator: generateIntervalExercise,
   },
   dreiklaenge: {
-    label: "Dreiklänge",
-    description: "Dur, Moll, vermindert, übermässig mit Umkehrungen.",
+    label: "Dreiklaenge",
+    description: "Dur, Moll, vermindert, uebermaessig mit Umkehrungen.",
     answerLabel: "Dreiklang",
     exerciseKinds: [
       { id: "maj-root", label: "Dur Grundstellung", intervals: [0, 4, 7] },
@@ -42,15 +40,15 @@ const CATEGORIES = {
       { id: "dim-root", label: "Vermindert Grundstellung", intervals: [0, 3, 6] },
       { id: "dim-1", label: "Vermindert 1. Umkehrung", intervals: [0, 3, 9] },
       { id: "dim-2", label: "Vermindert 2. Umkehrung", intervals: [0, 6, 9] },
-      { id: "aug-root", label: "Übermässig Grundstellung", intervals: [0, 4, 8] },
-      { id: "aug-1", label: "Übermässig 1. Umkehrung", intervals: [0, 4, 8] },
-      { id: "aug-2", label: "Übermässig 2. Umkehrung", intervals: [0, 4, 8] },
+      { id: "aug-root", label: "Uebermaessig Grundstellung", intervals: [0, 4, 8] },
+      { id: "aug-1", label: "Uebermaessig 1. Umkehrung", intervals: [0, 4, 8] },
+      { id: "aug-2", label: "Uebermaessig 2. Umkehrung", intervals: [0, 4, 8] },
     ],
     generator: generateChordExercise,
   },
   vierklaenge: {
-    label: "Vierklänge",
-    description: "Maj7, moll7, Dominant7 und vermindert zufällig gemischt.",
+    label: "Vierklaenge",
+    description: "Maj7, moll7, Dominant7 und vermindert zufaellig gemischt.",
     answerLabel: "Vierklang",
     exerciseKinds: [
       { id: "maj7-root", label: "Maj7 Grundstellung", intervals: [0, 4, 7, 11] },
@@ -82,7 +80,7 @@ const CATEGORIES = {
       { id: "phrygisch", label: "Phrygisch", intervals: [0, 1, 3, 5, 7, 8, 10, 12] },
       { id: "lydisch", label: "Lydisch", intervals: [0, 2, 4, 6, 7, 9, 11, 12] },
       { id: "mixolydisch", label: "Mixolydisch", intervals: [0, 2, 4, 5, 7, 9, 10, 12] },
-      { id: "aeolisch", label: "Äolisch / Moll", intervals: [0, 2, 3, 5, 7, 8, 10, 12] },
+      { id: "aeolisch", label: "Aeolisch / Moll", intervals: [0, 2, 3, 5, 7, 8, 10, 12] },
       { id: "lokrisch", label: "Lokrisch", intervals: [0, 1, 3, 5, 6, 8, 10, 12] },
       { id: "harm-moll", label: "Harmonisch Moll", intervals: [0, 2, 3, 5, 7, 8, 11, 12] },
       { id: "mel-moll", label: "Melodisch Moll", intervals: [0, 2, 3, 5, 7, 9, 11, 12] },
@@ -114,10 +112,12 @@ document.addEventListener("DOMContentLoaded", () => {
   renderModeButtons();
   renderCategoryButtons();
   bindEvents();
+  renderIntro();
   renderSession();
   renderStats();
   renderCategoryStats();
   renderStatsVisibility();
+  renderExercise();
 });
 
 function cacheElements() {
@@ -174,49 +174,73 @@ function bindEvents() {
 }
 
 function renderModeButtons() {
-  el.modeButtons.innerHTML = "";
-  for (const mode of MODES) {
-    const button = document.createElement("button");
-    button.textContent = mode.label;
-    if (state.mode === mode.id) button.classList.add("active");
-    button.addEventListener("click", () => {
-      state.mode = mode.id;
+  renderButtonSet(el.modeButtons, MODES, state.mode, (modeId) => {
+    state.mode = modeId;
+    state.currentExercise = null;
+    state.revealed = false;
+    state.singStep = "idle";
+    renderModeButtons();
+    renderSession();
+    renderExercise();
+    renderStatsVisibility();
+  });
+
+  if (el.introModeButtons) {
+    renderButtonSet(el.introModeButtons, MODES, state.mode, (modeId) => {
+      state.mode = modeId;
       state.currentExercise = null;
       state.revealed = false;
+      state.singStep = "idle";
       renderModeButtons();
       renderSession();
       renderExercise();
-      renderStatsVisibility();
     });
-    el.modeButtons.appendChild(button);
   }
-  if (el.introModeButtons) renderIntroModeButtons();
 }
 
 function renderCategoryButtons() {
-  el.categoryButtons.innerHTML = "";
-  for (const [id, category] of Object.entries(CATEGORIES)) {
-    const button = document.createElement("button");
-    button.textContent = category.label;
-    if (state.category === id) button.classList.add("active");
-    button.addEventListener("click", () => {
-      state.category = id;
+  const categories = Object.entries(CATEGORIES).map(([id, category]) => ({ id, label: category.label }));
+
+  renderButtonSet(el.categoryButtons, categories, state.category, (categoryId) => {
+    state.category = categoryId;
+    state.currentExercise = null;
+    state.revealed = false;
+    state.singStep = "idle";
+    renderCategoryButtons();
+    renderSession();
+    renderExercise();
+    renderCategoryStats();
+    renderStatsVisibility();
+  });
+
+  if (el.introCategoryButtons) {
+    renderButtonSet(el.introCategoryButtons, categories, state.category, (categoryId) => {
+      state.category = categoryId;
       state.currentExercise = null;
       state.revealed = false;
+      state.singStep = "idle";
       renderCategoryButtons();
       renderSession();
       renderExercise();
       renderCategoryStats();
-      renderStatsVisibility();
     });
-    el.categoryButtons.appendChild(button);
   }
-  if (el.introCategoryButtons) renderIntroCategoryButtons();
+}
+
+function renderButtonSet(container, items, activeId, onClick) {
+  container.innerHTML = "";
+  items.forEach((item) => {
+    const button = document.createElement("button");
+    button.textContent = item.label;
+    if (item.id === activeId) button.classList.add("active");
+    button.addEventListener("click", () => onClick(item.id));
+    container.appendChild(button);
+  });
 }
 
 function renderSession() {
   const category = CATEGORIES[state.category];
-  el.sessionTitle.textContent = `${state.mode === "hear" ? "Hören" : "Singen"}: ${category.label}`;
+  el.sessionTitle.textContent = `${state.mode === "hear" ? "Hoeren" : "Singen"}: ${category.label}`;
   el.sessionDescription.textContent = category.description;
 }
 
@@ -227,7 +251,9 @@ function newExercise() {
   state.revealed = false;
   state.singStep = state.mode === "sing" ? "prompt" : "idle";
   renderExercise();
-  if (state.mode === "hear") playPrompt();
+  if (state.mode === "hear") {
+    playPrompt();
+  }
 }
 
 function renderExercise() {
@@ -235,32 +261,37 @@ function renderExercise() {
   el.answerOptions.innerHTML = "";
   el.feedbackBox.className = "feedback muted";
   el.feedbackBox.textContent = "Noch keine Bewertung.";
-  const hasSingExercise = state.mode === "sing" && !!exercise;
-  el.singPanel.classList.toggle("hidden", !hasSingExercise);
-  el.singControls.classList.toggle("hidden", !hasSingExercise);
-  el.answersSection.classList.toggle("hidden", state.mode !== "hear" || !exercise);
+
+  const isSingMode = state.mode === "sing";
+  const hasExercise = Boolean(exercise);
+  el.singPanel.classList.toggle("hidden", !isSingMode || !hasExercise);
+  el.singControls.classList.toggle("hidden", !isSingMode || !hasExercise);
+  el.answersSection.classList.toggle("hidden", isSingMode || !hasExercise);
 
   if (!exercise) {
     el.taskTitle.textContent = "Noch keine Aufgabe";
     el.taskInstructions.textContent = "Erstelle eine Aufgabe, um zu starten.";
     el.categoryStatsTitle.textContent = `Themen-Statistik: ${CATEGORIES[state.category].label}`;
-    el.singFlowText.textContent = "Starte eine Aufgabe, um den Ablauf zu sehen.";
+    if (el.singFlowText) {
+      el.singFlowText.textContent = "Starte eine Aufgabe, um den Ablauf zu sehen.";
+    }
     return;
   }
 
   el.taskTitle.textContent = exercise.title;
   el.taskInstructions.textContent = exercise.instructions;
-  el.difficultyBadge.textContent = `${CATEGORIES[state.category].exerciseKinds.length} Varianten, zufällig gemischt`;
+  el.difficultyBadge.textContent = `${CATEGORIES[state.category].exerciseKinds.length} Varianten, zufaellig gemischt`;
 
   const options = [...CATEGORIES[state.category].exerciseKinds]
     .sort((a, b) => a.label.localeCompare(b.label, "de"))
     .map((kind) => {
       const button = document.createElement("button");
       button.textContent = kind.label;
-      button.disabled = state.mode === "sing";
+      button.disabled = isSingMode;
       button.addEventListener("click", () => submitAnswer(kind.id));
       return button;
     });
+
   options.forEach((button) => el.answerOptions.appendChild(button));
   renderSingFlow();
   renderCategoryStats();
@@ -272,20 +303,20 @@ function submitAnswer(answerId) {
 
   const isCorrect = answerId === exercise.correctAnswerId;
   const answerButtons = [...el.answerOptions.querySelectorAll("button")];
-  for (const button of answerButtons) {
+  answerButtons.forEach((button) => {
     button.disabled = true;
     if (button.textContent === exercise.correctAnswerLabel) button.classList.add("correct");
     if (!isCorrect && button.textContent === getKindById(state.category, answerId).label) {
       button.classList.add("wrong");
     }
-  }
+  });
 
   recordResult(state.category, exercise.correctAnswerId, isCorrect);
   state.revealed = true;
   el.feedbackBox.className = `feedback ${isCorrect ? "good" : "bad"}`;
   el.feedbackBox.textContent = isCorrect
     ? `Richtig: ${exercise.correctAnswerLabel}`
-    : `Nicht ganz. Richtig wäre: ${exercise.correctAnswerLabel}`;
+    : `Nicht ganz. Richtig waere: ${exercise.correctAnswerLabel}`;
   renderStats();
   renderCategoryStats();
 }
@@ -295,12 +326,44 @@ function revealSolution() {
   if (!exercise) return;
 
   state.revealed = true;
-  playSolution(exercise);
-
   if (state.mode === "sing") {
+    state.singStep = "revealed";
     el.feedbackBox.className = "feedback good";
-    el.feedbackBox.textContent = `Lösung: ${exercise.correctAnswerLabel}. Höre die Lösung an und vergleiche sie mit deinem Gesang.`;
+    el.feedbackBox.textContent = `Loesung: ${exercise.correctAnswerLabel}. Jetzt kannst du die Loesung anhoeren und vergleichen.`;
+    renderSingFlow();
+    return;
   }
+
+  playSolution(exercise);
+}
+
+function renderSingFlow() {
+  if (!el.singFlowText) return;
+
+  if (state.mode !== "sing" || !state.currentExercise) {
+    el.singFlowText.textContent = "Starte eine Aufgabe, um den Ablauf zu sehen.";
+    return;
+  }
+
+  const exercise = state.currentExercise;
+  const flowByStep = {
+    prompt: `1. Hoere die Aufgabe. 2. Spiele den Grundton bei Bedarf nochmals ab. 3. Singe ${exercise.correctAnswerLabel} selbst.`,
+    attempted: "Dein Versuch ist abgeschlossen. Blende jetzt die Loesung ein, wenn du kontrollieren willst.",
+    revealed: `Loesung sichtbar: ${exercise.correctAnswerLabel}. Spiele sie jetzt zum Vergleichen ab.`,
+  };
+
+  el.singFlowText.textContent = flowByStep[state.singStep] || flowByStep.prompt;
+  el.playReferenceBtn.disabled = state.singStep === "revealed";
+  el.doneSingingBtn.disabled = state.singStep === "revealed";
+  el.playSolutionBtn.disabled = state.singStep !== "revealed";
+}
+
+function markSingingDone() {
+  if (!state.currentExercise || state.mode !== "sing") return;
+  state.singStep = "attempted";
+  el.feedbackBox.className = "feedback muted";
+  el.feedbackBox.textContent = "Dein Versuch ist abgeschlossen. Zeige jetzt die Loesung, wenn du vergleichen willst.";
+  renderSingFlow();
 }
 
 function renderStats() {
@@ -313,12 +376,12 @@ function renderStats() {
   ];
 
   el.globalStats.innerHTML = "";
-  for (const row of rows) {
+  rows.forEach((row) => {
     const card = document.createElement("div");
     card.className = "stat-card";
     card.innerHTML = `<strong>${row.value}</strong><span>${row.label}</span>`;
     el.globalStats.appendChild(card);
-  }
+  });
 }
 
 function renderStatsVisibility() {
@@ -330,53 +393,20 @@ function renderIntro() {
   el.introModal.classList.toggle("hidden", !state.introOpen);
 }
 
-function renderIntroModeButtons() {
-  el.introModeButtons.innerHTML = "";
-  for (const mode of MODES) {
-    const button = document.createElement("button");
-    button.textContent = mode.label;
-    if (state.mode === mode.id) button.classList.add("active");
-    button.addEventListener("click", () => {
-      state.mode = mode.id;
-      renderModeButtons();
-      renderSession();
-      renderExercise();
-    });
-    el.introModeButtons.appendChild(button);
-  }
-}
-
-function renderIntroCategoryButtons() {
-  el.introCategoryButtons.innerHTML = "";
-  for (const [id, category] of Object.entries(CATEGORIES)) {
-    const button = document.createElement("button");
-    button.textContent = category.label;
-    if (state.category === id) button.classList.add("active");
-    button.addEventListener("click", () => {
-      state.category = id;
-      renderCategoryButtons();
-      renderSession();
-      renderExercise();
-      renderCategoryStats();
-    });
-    el.introCategoryButtons.appendChild(button);
-  }
-}
-
 function renderCategoryStats() {
   const category = CATEGORIES[state.category];
   const categoryStats = state.stats[state.category] || {};
   el.categoryStatsTitle.textContent = `Themen-Statistik: ${category.label}`;
   el.categoryStats.innerHTML = "";
 
-  for (const kind of category.exerciseKinds) {
+  category.exerciseKinds.forEach((kind) => {
     const item = categoryStats[kind.id] || { total: 0, correct: 0 };
     const accuracy = item.total ? Math.round((item.correct / item.total) * 100) : 0;
     const card = document.createElement("div");
     card.className = "stat-card";
     card.innerHTML = `<strong>${accuracy}%</strong><span>${kind.label}</span><p class="muted">${item.correct}/${item.total} richtig</p>`;
     el.categoryStats.appendChild(card);
-  }
+  });
 }
 
 function resetStats() {
@@ -385,7 +415,7 @@ function resetStats() {
   renderStats();
   renderCategoryStats();
   el.feedbackBox.className = "feedback muted";
-  el.feedbackBox.textContent = "Statistik wurde zurückgesetzt.";
+  el.feedbackBox.textContent = "Statistik wurde zurueckgesetzt.";
 }
 
 function toggleStats() {
@@ -412,17 +442,16 @@ function shuffledCopy(items) {
 function generateIntervalExercise(category, kind, mode) {
   const root = randomMidi(55, 66);
   const notes = [root, root + kind.semitones];
-  const direction = Math.random() > 0.5 ? "aufwärts" : "abwärts";
-  const ordered = direction === "aufwärts" ? notes : [...notes].reverse();
+  const direction = Math.random() > 0.5 ? "aufwaerts" : "abwaerts";
+  const ordered = direction === "aufwaerts" ? notes : [...notes].reverse();
 
   return {
     type: "interval",
     kindId: kind.id,
     title: "Intervalltraining",
-    instructions:
-      mode === "hear"
-        ? "Höre das Intervall und wähle die richtige Bezeichnung."
-        : `Sing vom Grundton aus eine ${kind.label} ${direction}.`,
+    instructions: mode === "hear"
+      ? "Hoere das Intervall und waehle die richtige Bezeichnung."
+      : `Singe vom Grundton aus eine ${kind.label} ${direction}.`,
     root,
     notes: ordered,
     correctAnswerId: kind.id,
@@ -437,10 +466,9 @@ function generateChordExercise(category, kind, mode) {
     type: "chord",
     kindId: kind.id,
     title: category.label,
-    instructions:
-      mode === "hear"
-        ? `${category.answerLabel} anhören und richtige Variante auswählen.`
-        : `Grundton hören und dann ${kind.label} singen.`,
+    instructions: mode === "hear"
+      ? `${category.answerLabel} anhoeren und richtige Variante auswaehlen.`
+      : `Hoere die Aufgabe, spiele den Grundton nach Bedarf ab und singe dann ${kind.label}.`,
     root,
     notes,
     correctAnswerId: kind.id,
@@ -455,10 +483,9 @@ function generateScaleExercise(category, kind, mode) {
     type: "scale",
     kindId: kind.id,
     title: "Tonmaterial",
-    instructions:
-      mode === "hear"
-        ? "Höre die Tonfolge und wähle die passende Skala oder den passenden Modus."
-        : `Grundton hören und dann ${kind.label} singen.`,
+    instructions: mode === "hear"
+      ? "Hoere die Tonfolge und waehle die passende Skala oder den passenden Modus."
+      : `Hoere die Aufgabe, spiele den Grundton nach Bedarf ab und singe dann ${kind.label}.`,
     root,
     notes,
     correctAnswerId: kind.id,
@@ -470,6 +497,12 @@ function playPrompt() {
   const exercise = state.currentExercise;
   if (!exercise) return;
   ensureAudio();
+
+  if (state.mode === "sing") {
+    state.singStep = "prompt";
+    renderSingFlow();
+  }
+
   if (exercise.type === "interval" || exercise.type === "scale") {
     playSequence(exercise.notes, 0.62);
   } else {
@@ -486,6 +519,7 @@ function playReference(exercise) {
 function playSolution(exercise) {
   if (!exercise) return;
   ensureAudio();
+
   if (exercise.type === "chord") {
     playSequence([exercise.root], 0.6, 0.08);
     playChord(exercise.notes, 1.3, 0.75);
@@ -537,10 +571,6 @@ function randomMidi(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function pickRandom(array) {
-  return array[Math.floor(Math.random() * array.length)];
-}
-
 function getKindById(categoryId, kindId) {
   return CATEGORIES[categoryId].exerciseKinds.find((kind) => kind.id === kindId);
 }
@@ -568,12 +598,14 @@ function recordResult(categoryId, kindId, isCorrect) {
 function summarizeStats(stats) {
   let total = 0;
   let correct = 0;
-  for (const category of Object.values(stats)) {
-    for (const kind of Object.values(category)) {
+
+  Object.values(stats).forEach((category) => {
+    Object.values(category).forEach((kind) => {
       total += kind.total;
       correct += kind.correct;
-    }
-  }
+    });
+  });
+
   return {
     total,
     correct,
